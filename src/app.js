@@ -59,9 +59,12 @@ app.post("/signup", async (req, res) => {
     emailId: "aryachauhan03@gmail.com",
     password: "aryachauhan03",
   });
-
-  await user.save();
-  res.send("User added succesfully!!");
+  try {
+    await user.save();
+    res.send("User added succesfully!!");
+  } catch (err) {
+    res.status(400).send("Error saving the user: " + err.message);
+  }
 });
 
 connectDB()
