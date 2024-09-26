@@ -51,19 +51,101 @@ const app = express();
 //   res.send("Hello from the test");
 // });
 
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
   // creating a new instance of User model
-  const user = new User({
-    firstName: "Arya",
-    lastName: "Chauhan",
-    emailId: "aryachauhan03@gmail.com",
-    password: "aryachauhan03",
-  });
+  const user = new User(req.body);
   try {
     await user.save();
     res.send("User added succesfully!!");
   } catch (err) {
     res.status(400).send("Error saving the user: " + err.message);
+  }
+});
+
+app.get("/user", async (req, res) => {
+  // creating a new instance of User model
+  try {
+    // returms all users in array with the specified emailId
+    // const users = await User.find({ emailId: req.body.emailId });
+    // if (users.length === 0) {
+    //   res.status(404).send("User not found");
+    // } else {
+    //   res.send(users);
+    // }
+
+    // returns first match only
+    const user = await User.findOne({ emailId: req.body.emailId });
+    if (!user) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(user);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+// Feed API - GET/Feed - get all users from the database
+
+app.get("/feed", async (req, res) => {
+  // creating a new instance of User model
+  try {
+    const users = await User.find();
+    if (users.length === 0) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (user) {
+      res.send("User deleted successfully");
+    } else {
+      res.send("User not found");
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong: " + err.message);
+  }
+});
+
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
+  const data = req.body;
+
+  try {
+    const ALLOWED_UPDATES = ["age", "photoUrl", "about", "gender", "skills"];
+
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+
+    if (data?.skills.length > 10) {
+      throw new Error("Skills cannot be more than 10");
+    }
+    const user = await User.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    if (user) {
+      res.send("User deleted successfully");
+    } else {
+      res.send("User not found");
+    }
+  } catch (err) {
+    res.status(400).send("UPDATE FAILED: " + err.message);
   }
 });
 
