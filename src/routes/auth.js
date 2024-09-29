@@ -61,35 +61,9 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-authRouter.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-
-  try {
-    const ALLOWED_UPDATES = ["age", "photoUrl", "about", "gender", "skills"];
-
-    const isUpdateAllowed = Object.keys(data).every((k) =>
-      ALLOWED_UPDATES.includes(k)
-    );
-    if (!isUpdateAllowed) {
-      throw new Error("Update not allowed");
-    }
-
-    if (data?.skills.length > 10) {
-      throw new Error("Skills cannot be more than 10");
-    }
-    const user = await User.findByIdAndUpdate(userId, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-    if (user) {
-      res.send("User updated successfully");
-    } else {
-      res.send("User not found");
-    }
-  } catch (err) {
-    res.status(400).send("UPDATE FAILED: " + err.message);
-  }
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, { expires: new Date(Date.now()) });
+  res.send("Logout Successful!!");
 });
 
 module.exports = authRouter;

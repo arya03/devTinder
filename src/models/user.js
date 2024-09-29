@@ -83,7 +83,6 @@ userSchema.methods.validatePassword = async function (passwordInputByUser) {
 };
 
 userSchema.methods.getJWT = async function () {
-  console.log("called jwt");
   // here this represents the instance of User Schema, i.e, user document
   const user = this;
   const token = await jwt.sign({ _id: user._id }, "DEV@Tinder$790", {
